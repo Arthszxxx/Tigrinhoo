@@ -1,0 +1,122 @@
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: radial-gradient(circle, #fff176, #ff9800);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.game {
+  background: #fff;
+  padding: 25px;
+  border-radius: 25px;
+  width: 370px;
+  text-align: center;
+  box-shadow: 0 0 30px rgba(255, 152, 0, 0.8);
+}
+
+h1 {
+  color: #ff9800;
+  margin: 5px;
+}
+
+.tiger {
+  font-size: 60px;
+  animation: pular 2s infinite;
+}
+@keyframes pular {
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+.status {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+}
+
+.energy-bar {
+  background: #eee;
+  height: 12px;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 6px;
+}
+.energy-fill {
+  background: linear-gradient(90deg, #4caf50, #8bc34a);
+  height: 100%;
+  transition: 0.3s;
+}
+
+.slots {
+  display: flex;
+  justify-content: space-between;
+  margin: 18px 0;
+}
+.slot {
+  width: 95px;
+  height: 95px;
+  font-size: 55px;
+  background: #fff3cd;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.spin {
+  animation: girar 0.8s;
+}
+@keyframes girar {
+  100% {
+    transform: rotateX(360deg);
+  }
+}
+
+button {
+  background: linear-gradient(45deg, #ff9800, #ff5722);
+  border: none;
+  color: #fff;
+  padding: 12px 22px;
+  border-radius: 25px;
+  margin: 4px;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.shop {
+  background: #e3f2fd;
+  padding: 10px;
+  border-radius: 15px;
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+.buff {
+  font-weight: bold;
+  color: #2e7d32;
+  min-height: 20px;
+}
+
+/* ANÚNCIO */
+.ad {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  font-size: 22px;
+}
+.ad span {
+  font-size: 40px;
+  margin-bottom: 10px;
+}
