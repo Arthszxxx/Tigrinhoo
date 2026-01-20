@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Tigrinho da Sorte 🐯</title>
+
+<style>
+body{
+  margin:0;
+  font-family:'Segoe UI',sans-serif;
+  background:radial-gradient(circle,#fff176,#ff9800);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+}
+
+.game{
+  background:#fff;
+  padding:25px;
+  border-radius:25px;
+  width:370px;
+  text-align:center;
+  box-shadow:0 0 30px rgba(255,152,0,0.8);
+}
+
+h1{color:#ff9800;margin:5px}
+
+.tiger{font-size:60px;animation:pular 2s infinite}
+@keyframes pular{50%{transform:translateY(-12px)}}
+
+.status{
+  display:flex;
+  justify-content:space-between;
+  font-size:14px;
+}
+
+.energy-bar{
+  background:#eee;
+  height:12px;
+  border-radius:10px;
+  overflow:hidden;
+  margin-top:6px;
+}
+.energy-fill{
+  background:linear-gradient(90deg,#4caf50,#8bc34a);
+  height:100%;
+  transition:.3s;
+}
+
+.slots{
+  display:flex;
+  justify-content:space-between;
+  margin:18px 0;
+}
+.slot{
+  width:95px;height:95px;
+  font-size:55px;
+  background:#fff3cd;
+  border-radius:18px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.spin{animation:girar .8s}
+@keyframes girar{100%{transform:rotateX(360deg)}}
+
+button{
+  background:linear-gradient(45deg,#ff9800,#ff5722);
+  border:none;color:#fff;
+  padding:12px 22px;
+  border-radius:25px;
+  margin:4px;
+  cursor:pointer;
+}
+
+button:disabled{
+  opacity:.5;
+  cursor:not-allowed;
+}
+
+.shop{
+  background:#e3f2fd;
+  padding:10px;
+  border-radius:15px;
+  margin-top:10px;
+  font-size:14px;
+}
+
+.buff{
+  font-weight:bold;
+  color:#2e7d32;
+  min-height:20px;
+}
+
+/* ANÚNCIO */
+.ad{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.8);
+  color:#fff;
+  justify-content:center;
+  align-items:center;
+  flex-direction:column;
+  font-size:22px;
+}
+.ad span{font-size:40px;margin-bottom:10px}
+</style>
+</head>
+
+<body>
+
+<div class="game">
+  <div class="tiger">🐯</div>
+  <h1>Tigrinho da Sorte</h1>
+
+  <div class="status">
+    <div>❤️ <span id="vidas"></span></div>
+    <div>🏆 <span id="nivel"></span></div>
+    <div>⚡ <span id="energia"></span>/10</div>
+  </div>
+
+  <div class="energy-bar">
+    <div class="energy-fill" id="energyFill"></div>
+  </div>
+
+  <div class="slots">
+    <div class="slot" id="s1">❓</div>
+    <div class="slot" id="s2">❓</div>
+    <div class="slot" id="s3">❓</div>
+  </div>
+
+  <button onclick="girar()">🎰 GIRAR</button>
+  <button onclick="recompensa()">🎁 Recompensa</button>
+  <button id="adBtn" onclick="assistirAnuncio()">📺 Assistir anúncio</button>
+
+  <p>⭐ Pontos: <span id="pontos"></span></p>
+  <div class="buff" id="buffText"></div>
+
+  <div class="shop">
+    <strong>🛒 Loja</strong><br><br>
+    <button onclick="comprarEnergia(5,100)">⚡ +5 (100⭐)</button>
+    <button onclick="comprarEnergia(10,180)">⚡ +10 (180⭐)</button><br>
+    <button onclick="buffSorte()">🍀 Sorte x2 (150⭐)</button>
+    <button onclick="buffCombo()">💎 Mais combos (200⭐)</button>
+  </div>
+</div>
+
+<!-- ANÚNCIO FICTÍCIO -->
+<div class="ad" id="ad">
+  <span>📺</span>
+  <div id="adText">Assistindo anúncio...</div>
+</div>
+
+<script>
+const simbolos=["🐯","🍀","⭐","🍎","💎"];
+
+let pontos=+localStorage.getItem("pontos")||0;
+let vidas=+localStorage.getItem("vidas")||5;
+let nivel=+localStorage.getItem("nivel")||1;
+let objetivo=+localStorage.getItem("objetivo")||200;
+
+const maxEnergia=10;
+let energia=+localStorage.getItem("energia")||maxEnergia;
+let ultimaEnergia=+localStorage.getItem("ultimaEnergia")||Date.now();
+let ultimoAnuncio=+localStorage.getItem("ultimoAnuncio")||0;
+
+/* BUFFS */
+let sorteAtiva=false;
+let comboAtivo=false;
+
+function salvar(){
+  localStorage.setItem("pontos",pontos);
+  localStorage.setItem("vidas",vidas);
+  localStorage.setItem("nivel",nivel);
+  localStorage.setItem("objetivo",objetivo);
+  localStorage.setItem("energia",energia);
+  localStorage.setItem("ultimaEnergia",ultimaEnergia);
+  localStorage.setItem("ultimoAnuncio",ultimoAnuncio);
+}
+
+/* ENERGIA AUTOMÁTICA */
+setInterval(()=>{
+  const agora=Date.now();
+  const diff=Math.floor((agora-ultimaEnergia)/30000);
+  if(diff>0){
+    energia=Math.min(maxEnergia,energia+diff);
+    ultimaEnergia+=diff*30000;
+    salvar();
+    atualizar();
+  }
+  document.getElementById("adBtn").disabled =
+    Date.now()-ultimoAnuncio < 120000;
+},1000);
+
+/* 📺 ANÚNCIO */
+function assistirAnuncio(){
+  const ad=document.getElementById("ad");
+  const text=document.getElementById("adText");
+  ad.style.display="flex";
+
+  let tempo=5;
+  text.textContent="Assistindo anúncio... "+tempo;
+
+  const intervalo=setInterval(()=>{
+    tempo--;
+    text.textContent="Assistindo anúncio... "+tempo;
+    if(tempo<=0){
+      clearInterval(intervalo);
+      ad.style.display="none";
+      energia=Math.min(maxEnergia,energia+3);
+      ultimoAnuncio=Date.now();
+      salvar(); atualizar();
+      alert("⚡ +3 energia!");
+    }
+  },1000);
+}
+
+function comprarEnergia(qtd,preco){
+  if(pontos<preco){alert("⭐ Pontos insuficientes");return;}
+  pontos-=preco;
+  energia=Math.min(maxEnergia,energia+qtd);
+  salvar(); atualizar();
+}
+
+function buffSorte(){
+  if(pontos<150){alert("⭐ Pontos insuficientes");return;}
+  pontos-=150;
+  sorteAtiva=true;
+  buffText.textContent="🍀 Sorte x2 ativa!";
+  setTimeout(()=>{sorteAtiva=false;buffText.textContent="";},30000);
+  salvar(); atualizar();
+}
+
+function buffCombo(){
+  if(pontos<200){alert("⭐ Pontos insuficientes");return;}
+  pontos-=200;
+  comboAtivo=true;
+  buffText.textContent="💎 Mais combos!";
+  setTimeout(()=>{comboAtivo=false;buffText.textContent="";},20000);
+  salvar(); atualizar();
+}
+
+function girar(){
+  if(energia<=0){alert("⚡ Sem energia");return;}
+  energia--; ultimaEnergia=Date.now();
+
+  const slots=["s1","s2","s3"].map(id=>document.getElementById(id));
+  slots.forEach(s=>s.classList.add("spin"));
+
+  setTimeout(()=>{
+    let r=slots.map(()=>{
+      if(comboAtivo && Math.random()<0.4) return "🐯";
+      return simbolos[Math.floor(Math.random()*simbolos.length)];
+    });
+
+    slots.forEach((s,i)=>s.textContent=r[i]);
+    slots.forEach(s=>s.classList.remove("spin"));
+
+    let ganho=0;
+    if(r[0]===r[1]&&r[1]===r[2]) ganho=(r[0]==="🐯")?150:80;
+    else if(r[0]===r[1]||r[1]===r[2]||r[0]===r[2]) ganho=30;
+    else vidas--;
+
+    if(sorteAtiva) ganho*=2;
+    pontos+=ganho;
+
+    if(pontos>=objetivo){
+      nivel++; vidas+=2; objetivo+=200;
+      alert("🏆 Nível UP!");
+    }
+
+    salvar(); atualizar();
+  },800);
+}
+
+function recompensa(){
+  pontos+=100; vidas+=2;
+  salvar(); atualizar();
+}
+
+function atualizar(){
+  pontosEl.textContent=pontos;
+  vidasEl.textContent=vidas;
+  nivelEl.textContent=nivel;
+  energiaEl.textContent=energia;
+  energyFill.style.width=(energia/maxEnergia*100)+"%";
+}
+
+const pontosEl=document.getElementById("pontos");
+const vidasEl=document.getElementById("vidas");
+const nivelEl=document.getElementById("nivel");
+const energiaEl=document.getElementById("energia");
+const energyFill=document.getElementById("energyFill");
+const buffText=document.getElementById("buffText");
+
+atualizar();
+</script>
+
+</body>
+</html>
+
